@@ -61,7 +61,8 @@ const bookSchema = new mongoose.Schema({
       required: false
     }
   }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'API_Books'
   });
 
 const booksModel = mongoose.model(booksCollection, bookSchema);
