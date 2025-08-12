@@ -3,7 +3,6 @@ import booksModel from "../models/book.model.js";
 const validReadStatus = ['read', 'unread'];
 const validGenres = ['fiction', 'non-fiction', 'fantasy', 'biography', 'science', 'history', 'unknown'];
 
-// Escape user input for use in RegExp
 const escapeRegex = (input) => String(input).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default class BooksRepository {
