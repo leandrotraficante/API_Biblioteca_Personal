@@ -11,7 +11,6 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 
-// Rutas de la API
 app.use('/api/books', booksRouter);
 
 app.get('/', (req, res) => {
