@@ -6,12 +6,12 @@ const getAllBooks = async (req, res) => {
         const books = await booksService.getAllBooksService(filters);
         res.status(200).send(books)
     } catch (error) {
-        let status = 500;
         const message = String(error?.message || '').toLowerCase();
         if (message.includes('invalid')) {
-            status = 400;
+            res.status(400).send({ error: error.message });
+        } else {
+            res.status(500).send({ error: error.message });
         }
-        res.status(status).send({ error: error.message })
     }
 };
 
@@ -21,13 +21,13 @@ const getBookById = async (req, res) => {
         const bookById = await booksService.getBookByIdService(bookId);
         res.status(200).send(bookById)
     } catch (error) {
-        let status = 500;
         if (error?.message === 'Invalid book ID format') {
-            status = 400;
+            res.status(400).send({ error: error.message });
         } else if (error?.message === 'Book not found') {
-            status = 404;
+            res.status(404).send({ error: error.message });
+        } else {
+            res.status(500).send({ error: error.message });
         }
-        res.status(status).send({ error: error.message })
     }
 };
 
@@ -37,12 +37,12 @@ const createBook = async (req, res) => {
         const newBook = await booksService.saveBookService(bookData);
         res.status(201).send(newBook)
     } catch (error) {
-        let status = 500;
         const msg = String(error?.message || '').toLowerCase();
         if (msg.includes('required') || msg.includes('invalid') || msg.includes('cannot')) {
-            status = 400;
+            res.status(400).send({ error: error.message });
+        } else {
+            res.status(500).send({ error: error.message });
         }
-        res.status(status).send({ error: error.message })
     }
 };
 
@@ -53,13 +53,13 @@ const updateBookById = async (req, res) => {
         const updatedBook = await booksService.updateByIdService(bookId, updateData);
         res.status(200).send(updatedBook)
     } catch (error) {
-        let status = 500;
         if (error?.message === 'Invalid book ID format') {
-            status = 400;
+            res.status(400).send({ error: error.message });
         } else if (error?.message === 'Book not found') {
-            status = 404;
+            res.status(404).send({ error: error.message });
+        } else {
+            res.status(500).send({ error: error.message });
         }
-        res.status(status).send({ error: error.message })
     }
 };
 
@@ -69,13 +69,13 @@ const deleteBookById = async (req, res) => {
         const deletedBook = await booksService.deleteByIdService(bookId);
         res.status(200).send(deletedBook)
     } catch (error) {
-        let status = 500;
         if (error?.message === 'Invalid book ID format') {
-            status = 400;
+            res.status(400).send({ error: error.message });
         } else if (error?.message === 'Book not found') {
-            status = 404;
+            res.status(404).send({ error: error.message });
+        } else {
+            res.status(500).send({ error: error.message });
         }
-        res.status(status).send({ error: error.message })
     }
 };
 

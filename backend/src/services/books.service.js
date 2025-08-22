@@ -1,11 +1,55 @@
 import BooksRepository from "../repositories/books.repository.js";
-import mongoose from "mongoose";
+import { 
+    VALID_GENRES, 
+    VALID_READ_STATUS, 
+    isValidObjectId 
+} from "../constants/validation.js";
 
 const booksRepository = new BooksRepository();
 
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+const validateFilters = (filters) => {
+    const { available, genre, readStatus, readingDateFrom, year } = filters;
+    
+    if (available !== undefined) {
+        if (available !== true && available !== false && available !== 'true' && available !== 'false') {
+            throw new Error('Invalid available filter value');
+        }
+        // Convertir string a boolean para el repository
+        if (available === 'true') filters.available = true;
+        if (available === 'false') filters.available = false;
+    }
+
+    if (genre && !VALID_GENRES.includes(genre)) {
+        throw new Error(`Invalid genre filter value, allowed: ${VALID_GENRES.join(', ')}`);
+    }
+
+    if (readStatus && !VALID_READ_STATUS.includes(readStatus)) {
+        throw new Error(`Invalid readStatus filter value, allowed: ${VALID_READ_STATUS.join(', ')}`);
+    }
+
+    if (readingDateFrom) {
+        const date = new Date(readingDateFrom);
+        if (isNaN(date.getTime())) {
+            throw new Error('Invalid readingDateFrom filter value');
+        }
+    }
+
+    if (year !== undefined) {
+        const parsedYear = Number(year);
+        const currentYear = new Date().getFullYear();
+        if (!Number.isInteger(parsedYear)) {
+            throw new Error('Invalid year filter value, must be an integer');
+        }
+        if (parsedYear < 0 || parsedYear > currentYear) {
+            throw new Error(`Invalid year filter value, must be between 0 and ${currentYear}`);
+        }
+    }
+};
 
 const getAllBooksService = async (filters) => {
+    // Validar filtros antes de pasarlos al repository
+    validateFilters(filters);
+    
     const books = await booksRepository.getAllBooks(filters);
     return books;
 };
@@ -30,14 +74,12 @@ const saveBookService = async (bookData) => {
         throw new Error('Year cannot be in the future');
     }
 
-    const validReadStatus = ['read', 'unread'];
-    if (bookData.readStatus && !validReadStatus.includes(bookData.readStatus)) {
-        throw new Error(`Invalid readStatus value. Allowed values: ${validReadStatus.join(', ')}`);
+    if (bookData.readStatus && !VALID_READ_STATUS.includes(bookData.readStatus)) {
+        throw new Error(`Invalid readStatus value. Allowed values: ${VALID_READ_STATUS.join(', ')}`);
     }
 
-    const validGenres = ['fiction', 'non-fiction', 'fantasy', 'biography', 'science', 'history', 'unknown'];
-    if (bookData.genre && !validGenres.includes(bookData.genre)) {
-        throw new Error(`Invalid genre value. Allowed values: ${validGenres.join(', ')}`);
+    if (bookData.genre && !VALID_GENRES.includes(bookData.genre)) {
+        throw new Error(`Invalid genre value. Allowed values: ${VALID_GENRES.join(', ')}`);
     }
 
     const newBook = await booksRepository.saveBook(bookData);
@@ -54,14 +96,12 @@ const updateByIdService = async (bookId, updateData) => {
     }
   
     // Validar enums si vienen en updateData
-    const validReadStatus = ['read', 'unread'];
-    if (updateData.readStatus && !validReadStatus.includes(updateData.readStatus)) {
-      throw new Error(`Invalid readStatus value. Allowed values: ${validReadStatus.join(', ')}`);
+    if (updateData.readStatus && !VALID_READ_STATUS.includes(updateData.readStatus)) {
+      throw new Error(`Invalid readStatus value. Allowed values: ${VALID_READ_STATUS.join(', ')}`);
     }
   
-    const validGenres = ['fiction', 'non-fiction', 'fantasy', 'biography', 'science', 'history', 'unknown'];
-    if (updateData.genre && !validGenres.includes(updateData.genre)) {
-      throw new Error(`Invalid genre value. Allowed values: ${validGenres.join(', ')}`);
+    if (updateData.genre && !VALID_GENRES.includes(updateData.genre)) {
+      throw new Error(`Invalid genre value. Allowed values: ${VALID_GENRES.join(', ')}`);
     }
   
     // Validar que 'year' no sea futura, si viene

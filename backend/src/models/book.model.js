@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
+import { VALID_GENRES, VALID_READ_STATUS } from "../constants/validation.js";
 
 const booksCollection = 'books';
-
-const validGenres = ['fiction', 'non-fiction', 'fantasy', 'biography', 'science', 'history', 'unknown'];
 
 const bookSchema = new mongoose.Schema({
     title: {
@@ -27,12 +26,12 @@ const bookSchema = new mongoose.Schema({
       type: String,
       trim: true,
       maxlength: 50,
-      enum: validGenres,
+      enum: VALID_GENRES,
       default: 'unknown'
     },
     readStatus: {
       type: String,
-      enum: ['read', 'unread'],
+      enum: VALID_READ_STATUS,
       default: 'unread'
     },
     readingDate: {

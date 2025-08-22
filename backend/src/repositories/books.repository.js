@@ -1,8 +1,5 @@
 import booksModel from "../models/book.model.js";
 
-const validReadStatus = ['read', 'unread'];
-const validGenres = ['fiction', 'non-fiction', 'fantasy', 'biography', 'science', 'history', 'unknown'];
-
 const escapeRegex = (input) => String(input).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default class BooksRepository {
@@ -47,44 +44,23 @@ export default class BooksRepository {
         }
 
         if (available !== undefined) {
-            // Validar que available sea booleano o cadena 'true'/'false'
-            if (available === true || available === 'true') query.available = true;
-            else if (available === false || available === 'false') query.available = false;
-            else throw new Error('Invalid available filter value');
+            query.available = available;
         }
 
         if (genre) {
-            if (!validGenres.includes(genre)) {
-                throw new Error(`Invalid genre filter value, allowed: ${validGenres.join(', ')}`);
-            }
             query.genre = genre;
         }
 
         if (readStatus) {
-            if (!validReadStatus.includes(readStatus)) {
-                throw new Error(`Invalid readStatus filter value, allowed: ${validReadStatus.join(', ')}`);
-            }
             query.readStatus = readStatus;
         }
 
         if (readingDateFrom) {
-            const date = new Date(readingDateFrom);
-            if (isNaN(date.getTime())) {
-                throw new Error('Invalid readingDateFrom filter value');
-            }
-            query.readingDate = { $gte: date };
+            query.readingDate = { $gte: new Date(readingDateFrom) };
         }
 
         if (year !== undefined) {
-            const parsedYear = Number(year);
-            const currentYear = new Date().getFullYear();
-            if (!Number.isInteger(parsedYear)) {
-                throw new Error('Invalid year filter value, must be an integer');
-            }
-            if (parsedYear < 0 || parsedYear > currentYear) {
-                throw new Error(`Invalid year filter value, must be between 0 and ${currentYear}`);
-            }
-            query.year = parsedYear;
+            query.year = Number(year);
         }
 
         const skip = (Number(page) - 1) * Number(limit);
