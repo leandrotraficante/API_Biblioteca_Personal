@@ -142,6 +142,8 @@ GET /api/google-books/search?q=harry+potter
   googleId: String (opcional, único, indexado),
   title: String (requerido, 1-200),
   author: String (requerido, 1-100),
+  normalizedTitle: String (interno, generado automáticamente),
+  normalizedAuthor: String (interno, generado automáticamente),
   available: Boolean (default: true),
   genre: String (enum),
   readStatus: String (enum),
@@ -153,10 +155,10 @@ GET /api/google-books/search?q=harry+potter
 }
 ```
 
-**Géneros permitidos**
-`fiction`, `non-fiction`, `fantasy`, `biography`, `science`, `history`, `horror`, `unknown`
+**Géneros permitidos**  
+`fiction`, `non-fiction`, `fantasy`, `biography`, `science`, `history`, `horror`, `drama`, `unknown`
 
-**Estados de lectura permitidos**
+**Estados de lectura permitidos**  
 `pending`, `reading`, `read`
 
 ## 🧪 Ejemplos útiles
@@ -191,7 +193,7 @@ curl -X PUT http://localhost:8080/api/books/<bookId> \
 
 - `400 Bad Request`: validaciones fallidas (campos requeridos, enums, rangos, etc.)
 - `404 Not Found`: libro inexistente
-- `409 Conflict`: ya existe un libro con el mismo `googleId`
+- `409 Conflict`: ya existe un libro con el mismo `googleId` o con el mismo par `título + autor`
 - `500 Internal Server Error`: errores inesperados o problemas externos
 
 ## 👨‍💻 Autor

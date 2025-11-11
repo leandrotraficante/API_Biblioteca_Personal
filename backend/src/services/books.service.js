@@ -103,6 +103,15 @@ const saveBookService = async (bookData) => {
         }
         bookData.googleId = googleId;
     }
+    const normalizedTitle = bookData.title.trim().toLowerCase();
+    const normalizedAuthor = bookData.author.trim().toLowerCase();
+    const existingByTitleAuthor = await booksRepository.getBookByTitleAndAuthor(
+        normalizedTitle,
+        normalizedAuthor
+    );
+    if (existingByTitleAuthor) {
+        throw new Error('A book with the same title and author already exists');
+    }
 
     if (bookData.year && bookData.year > new Date().getFullYear()) {
         throw new Error('Year cannot be in the future');
@@ -167,6 +176,19 @@ const updateByIdService = async (bookId, updateData) => {
         throw new Error('Another book already uses the provided googleId');
       }
       updateData.googleId = googleId;
+    }
+    if (updateData.title || updateData.author) {
+      const titleToCheck = updateData.title ? String(updateData.title) : existingBook.title;
+      const authorToCheck = updateData.author ? String(updateData.author) : existingBook.author;
+      const normalizedTitle = titleToCheck.trim().toLowerCase();
+      const normalizedAuthor = authorToCheck.trim().toLowerCase();
+      const duplicate = await booksRepository.getBookByTitleAndAuthor(
+        normalizedTitle,
+        normalizedAuthor
+      );
+      if (duplicate && duplicate._id.toString() !== bookId) {
+        throw new Error('Another book already uses the same title and author');
+      }
     }
 
     if (updateData.rate !== undefined) {

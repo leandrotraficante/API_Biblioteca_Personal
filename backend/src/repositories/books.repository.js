@@ -91,6 +91,16 @@ export default class BooksRepository {
         return book;
     };
 
+    getBookByTitleAndAuthor = async (title, author) => {
+        const normalizedTitle = title.trim().toLowerCase();
+        const normalizedAuthor = author.trim().toLowerCase();
+        const book = await booksModel.findOne({
+            normalizedTitle,
+            normalizedAuthor
+        });
+        return book;
+    };
+
     saveBook = async (book) => {
         const newBook = await booksModel.create(book);
         return newBook;

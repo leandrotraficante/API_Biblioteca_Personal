@@ -26,6 +26,16 @@ const bookSchema = new mongoose.Schema({
       minlength: 1,
       maxlength: 100
     },
+    normalizedTitle: {
+      type: String,
+      lowercase: true,
+      trim: true
+    },
+    normalizedAuthor: {
+      type: String,
+      lowercase: true,
+      trim: true
+    },
     available: {
       type: Boolean,
       default: true
@@ -77,6 +87,32 @@ const bookSchema = new mongoose.Schema({
     timestamps: true,
     collection: booksCollection
   });
+
+bookSchema.pre('save', function normalizeTitleAndAuthor(next) {
+  if (this.isModified('title')) {
+    this.normalizedTitle = this.title.trim().toLowerCase();
+  }
+  if (this.isModified('author')) {
+    this.normalizedAuthor = this.author.trim().toLowerCase();
+  }
+  next();
+});
+
+bookSchema.pre('findOneAndUpdate', function normalizeTitleAndAuthor(next) {
+  const update = this.getUpdate();
+  if (!update) {
+    return next();
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'title')) {
+    const title = update.title;
+    update.normalizedTitle = typeof title === 'string' ? title.trim().toLowerCase() : title;
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'author')) {
+    const author = update.author;
+    update.normalizedAuthor = typeof author === 'string' ? author.trim().toLowerCase() : author;
+  }
+  next();
+});
 
 const booksModel = mongoose.model(booksCollection, bookSchema);
 
