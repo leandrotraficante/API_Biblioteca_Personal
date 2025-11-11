@@ -8,7 +8,7 @@ import {
 const booksRepository = new BooksRepository();
 
 const validateFilters = (filters) => {
-    const { available, genre, readStatus, readingDateFrom, year } = filters;
+    const { available, genre, readStatus, readingDateFrom, year, googleId, rate } = filters;
     
     if (available !== undefined) {
         if (available !== true && available !== false && available !== 'true' && available !== 'false') {
@@ -44,6 +44,28 @@ const validateFilters = (filters) => {
             throw new Error(`Invalid year filter value, must be between 0 and ${currentYear}`);
         }
     }
+
+    if (googleId !== undefined) {
+        if (typeof googleId !== 'string') {
+            throw new Error('Invalid googleId filter value');
+        }
+        const trimmedGoogleId = googleId.trim();
+        if (!trimmedGoogleId) {
+            throw new Error('Invalid googleId filter value');
+        }
+        filters.googleId = trimmedGoogleId;
+    }
+
+    if (rate !== undefined) {
+        const parsedRate = Number(rate);
+        if (!Number.isFinite(parsedRate)) {
+            throw new Error('Invalid rate filter value, must be a number');
+        }
+        if (parsedRate < 0 || parsedRate > 5) {
+            throw new Error('Invalid rate filter value, must be between 0 and 5');
+        }
+        filters.rate = parsedRate;
+    }
 };
 
 const getAllBooksService = async (filters) => {
@@ -70,6 +92,18 @@ const saveBookService = async (bookData) => {
         throw new Error('Title and author are required');
     }
 
+    if (bookData.googleId) {
+        const googleId = String(bookData.googleId).trim();
+        if (!googleId) {
+            throw new Error('Invalid googleId value');
+        }
+        const existing = await booksRepository.getBookByGoogleId(googleId);
+        if (existing) {
+            throw new Error('A book with the provided googleId already exists');
+        }
+        bookData.googleId = googleId;
+    }
+
     if (bookData.year && bookData.year > new Date().getFullYear()) {
         throw new Error('Year cannot be in the future');
     }
@@ -80,6 +114,17 @@ const saveBookService = async (bookData) => {
 
     if (bookData.genre && !VALID_GENRES.includes(bookData.genre)) {
         throw new Error(`Invalid genre value. Allowed values: ${VALID_GENRES.join(', ')}`);
+    }
+
+    if (bookData.rate !== undefined) {
+        const rate = Number(bookData.rate);
+        if (!Number.isFinite(rate)) {
+            throw new Error('Invalid rate value, must be a number');
+        }
+        if (rate < 0 || rate > 5) {
+            throw new Error('Invalid rate value, must be between 0 and 5');
+        }
+        bookData.rate = rate;
     }
 
     const newBook = await booksRepository.saveBook(bookData);
@@ -109,6 +154,32 @@ const updateByIdService = async (bookId, updateData) => {
       throw new Error('Year cannot be in the future');
     }
   
+    if (updateData.googleId !== undefined) {
+      if (updateData.googleId === null) {
+        throw new Error('googleId cannot be null');
+      }
+      const googleId = String(updateData.googleId).trim();
+      if (!googleId) {
+        throw new Error('Invalid googleId value');
+      }
+      const existing = await booksRepository.getBookByGoogleId(googleId);
+      if (existing && existing._id.toString() !== bookId) {
+        throw new Error('Another book already uses the provided googleId');
+      }
+      updateData.googleId = googleId;
+    }
+
+    if (updateData.rate !== undefined) {
+      const rate = Number(updateData.rate);
+      if (!Number.isFinite(rate)) {
+        throw new Error('Invalid rate value, must be a number');
+      }
+      if (rate < 0 || rate > 5) {
+        throw new Error('Invalid rate value, must be between 0 and 5');
+      }
+      updateData.rate = rate;
+    }
+
     const bookToUpdate = await booksRepository.updateById(bookId, updateData);
     if (!bookToUpdate) {
       throw new Error('Book not found');

@@ -4,6 +4,14 @@ import { VALID_GENRES, VALID_READ_STATUS } from "../constants/validation.js";
 const booksCollection = 'books';
 
 const bookSchema = new mongoose.Schema({
+    googleId: {
+      type: String,
+      trim: true,
+      minlength: 1,
+      maxlength: 100,
+      unique: true,
+      sparse: true
+    },
     title: {
       type: String,
       required: true,
@@ -32,7 +40,7 @@ const bookSchema = new mongoose.Schema({
     readStatus: {
       type: String,
       enum: VALID_READ_STATUS,
-      default: 'unread'
+      default: 'pending'
     },
     readingDate: {
       type: Date,
@@ -52,6 +60,12 @@ const bookSchema = new mongoose.Schema({
         message: 'Pages must be an integer'
       },
       required: false
+    },
+    rate: {
+      type: Number,
+      min: [0, 'Rate cannot be negative'],
+      max: [5, 'Rate cannot be greater than 5'],
+      default: 0
     },
     year: {
       type: Number,

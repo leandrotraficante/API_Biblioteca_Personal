@@ -15,10 +15,17 @@ export default class BooksRepository {
             search,
             titleLike,
             authorLike,
+            googleId,
+            rate,
             page = 1,
             limit = 10
         } = filters;
         const query = {};
+
+        if (rate !== undefined) {
+            query.rate = rate;
+        }
+
 
         if (author) query.author = author;
 
@@ -55,6 +62,10 @@ export default class BooksRepository {
             query.readStatus = readStatus;
         }
 
+        if (googleId) {
+            query.googleId = googleId;
+        }
+
         if (readingDateFrom) {
             query.readingDate = { $gte: new Date(readingDateFrom) };
         }
@@ -75,13 +86,22 @@ export default class BooksRepository {
         return bookById;
     };
 
+    getBookByGoogleId = async (googleId) => {
+        const book = await booksModel.findOne({ googleId });
+        return book;
+    };
+
     saveBook = async (book) => {
         const newBook = await booksModel.create(book);
         return newBook;
     };
 
     updateById = async (bookId, updateData) => {
-        const bookToUpdate = await booksModel.findByIdAndUpdate(bookId, updateData, { new: true });
+        const bookToUpdate = await booksModel.findByIdAndUpdate(
+            bookId,
+            updateData,
+            { new: true, runValidators: true }
+        );
         return bookToUpdate;
     };
 
